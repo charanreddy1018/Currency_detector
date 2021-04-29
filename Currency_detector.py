@@ -75,7 +75,7 @@ def double_threshold_hysteresis(image, low, high): #double threshold hysteresis
         for direction in range(len(dx)):
             new_x = x + dx[direction]
             new_y = y + dy[direction]
-            if((new_x >= 0 & new_x < size[0] & new_y >= 0 & new_y < size[1]) and (result[new_x, new_y]  == weak)):
+            if((new_x >= 0 and new_x < size[0] and new_y >= 0 and new_y < size[1]) and (result[new_x, new_y]  == weak)):
                 result[new_x, new_y] = strong
                 np.append(strong_x, new_x)
                 np.append(strong_y, new_y)
@@ -89,13 +89,30 @@ def Canny(image, low, high): #overall canny edge detection function
     return image
 
 def checkforcountry(image): #check the currency's country
-    x1 = int(len(image)*0.285) #croping the image 
+    x1 = int(len(image)*0.285) #croping the image
     x2 = int(len(image)*0.5714)
     y1 = int(len(image[0])*0.75)
     y2 = int(len(image[0])*0.86)
     display  = []
+    display1 =[]
+    display2 =[]
     c0 = 0
+    c1=0
     temp = image[x1:x2]
+    currency =''
+    #to diff yen from others
+    x3 = int(len(image)*0.5 - len(image)*0.1)
+    x4 = int(len(image)*0.5 + len(image)*0.1)
+    y3 = int(len(image[0])*0.5 - len(image[0])*0.09)
+    y4 = int(len(image[0])*0.5 + len(image[0])*0.09)
+    t = image[x3:x4]
+    #to diff euro,dollar
+    x5 = int(len(image)*0.5 )#- len(image)*0.2)
+    x6 = int(len(image)*0.5 + len(image)*0.2)
+    y5 = int(len(image[0])*0)
+    y6 = int(len(image[0])*0 + len(image[0])*0.1)
+    t1 = image[x5:x6]
+    c2=0
 
     for i in range(len(temp)):
 	    temp1 = list(temp[i])
@@ -106,10 +123,42 @@ def checkforcountry(image): #check the currency's country
 	            c0 +=1
 	    temp3 = np.array(temp2)
 	    display.append(temp3)
-    display = np.array(display)
-    final_out = cv2.resize(display,(0,0),fx= 2.75,fy=2.75)
-
-    return c0,final_out
+    if c0==0:
+        display=np.array(display)
+        final_out=cv2.resize(display,(0,0),fx=2.75,fy=2.75)
+        currency ='INR'
+        return currency,final_out
+    else:
+        for i in range(len(t)):
+            temp1=list(t[i])
+            temp2=temp1[y3:y4]
+            for i in range(len(temp2)):
+                if temp2[i] >100 :
+                    c1 +=1
+            temp3 = np.array(temp2)
+            display1.append(temp3)
+    if (c1 ==0 or c1 == 861):
+        display1=np.array(display1)
+        final_out=cv2.resize(display1,(0,0),fx=2.75,fy=2.75)
+        currency='YEN'
+        return currency,final_out
+    else:
+        for i in range(len(t1)):
+            temp1=list(t1[i])
+            temp2=temp1[y5:y6]
+            for i in range(len(temp2)):
+                if temp2[i] >100 :
+                    c2 +=1
+            temp3 =np.array(temp2)
+            display2.append(temp3)
+        display2=np.array(display2)
+        final_out=cv2.resize(display2,(0,0),fx=2.75,fy=2.75)
+    if (c2 < 90 or c2 == 580):
+        currency='EURO'
+        return currency,final_out
+    else :
+        currency='DOLLAR'
+        return currency,final_out
 
 def yenvaluedetection(image):  #yen value detection out of 1000,2000,5000,10000
 	dataset_for_yen = [6.828,7.027,6.8936,5.4565] #dataset 
@@ -150,6 +199,44 @@ def yenvaluedetection(image):  #yen value detection out of 1000,2000,5000,10000
 	return tempy,final_outt,cannied
 
 
+def dollarvaluedetection(image):  #dollar value detection out of 1,2,5,10,20,50,100
+	dataset_for_dollar = [3.677,5.957,5.378,6.578,5.076,4.746] #dataset 
+
+	cannied = Canny(image,20,80) #canny 
+	x = cannied
+	x1 = 0
+	x2 = int(len(x)*0.2) #cropping the required information
+
+	y1 = int(len(x[0])*0.8336)
+	y2 = int(len(x[0])*0.98)
+
+	out  = []
+	xx = x[x1:x2]
+
+	c0 = 0
+	c1 = 0
+	for i in range(len(xx)):
+	    temp = list(xx[i])
+	    temp1 = temp[y1:y2]
+
+
+	    for i in range(len(temp1)):
+	        if temp1[i] == 0 :
+	            c0 +=1
+	        else:
+	            c1+=1
+	    temp2 = np.array(temp1)
+	    out.append(temp2)
+	out = np.array(out)
+	final_outt = cv2.resize(out,(0,0),fx= 2.75,fy=2.75)
+
+	check = closest(dataset_for_dollar,c0/c1) #comparing weak and dark pixels 
+	
+	tempy = dataset_for_dollar.index(check)
+
+	return tempy,final_outt,cannied
+
+
 def rupeevaluedetection(image):
 	dataset_for_rupee = [8.946,8.242,5.36,9.2,7.398,7.436] #rupee value detection out of 10,50,100,200,500,2000
 
@@ -186,6 +273,41 @@ def rupeevaluedetection(image):
 
 	return tempy,final_outt,cannied
 
+def eurovaluedetection(image):
+	dataset_for_rupee = [4.123,6.784,3.537,10.358,9.515,5.609] #euro value detection out of 5,10,20,50,100,200
+
+	cannied = cv2.Canny(image,0,180)
+	x = cannied
+	x1 = int(len(x)*0.0)#cropping the required information
+
+	x2 = int(len(x)*0.16)
+
+	y1 = int(len(x[0])*0.70)
+	y2 = int(len(x[0])*0.980)
+	out  = []
+	xx = x[x1:x2]
+
+	c0 = 0
+	c1 = 0
+	for i in range(len(xx)):
+	    temp = list(xx[i])
+	    temp1 = temp[y1:y2]
+
+
+	    for i in range(len(temp1)):
+	        if temp1[i] == 0 :
+	            c0 +=1
+	        else:
+	            c1+=1
+	    temp2 = np.array(temp1)
+	    out.append(temp2)
+	out = np.array(out)
+	final_outt = cv2.resize(out,(0,0),fx= 2.75,fy=2.75)
+
+	check = closest(dataset_for_rupee,c0/c1) #comparing weak and dark pixels 
+	tempy = dataset_for_rupee.index(check)
+
+	return tempy,final_outt,cannied
 
 def show_yen(index):  #display of the detected currency
 	val1 = cv2.imread("display1000yen.jpg")
@@ -203,6 +325,27 @@ def show_yen(index):  #display of the detected currency
 
 	return imvalue
 
+def show_dollar(index):  #display of the detected currencyV
+	val1 = cv2.imread("display1000yen.jpg")
+	val2 = cv2.imread("display2000yen.jpg")
+	val3= cv2.imread("display5000yen.jpg")
+	val4 = cv2.imread("display10000yen.jpg")
+	val5 = cv2.imread("display10000yen.jpg")
+	val6 = cv2.imread("display10000yen.jpg")
+	if index == 0:
+		imvalue = val1
+	elif index ==1:
+		imvalue = val2
+	elif index == 2:
+		imvalue = val3
+	elif index ==3:
+		imvalue = val4
+	elif index ==4:
+		imvalue = val5
+	elif index ==5:
+		imvalue = val6
+
+	return imvalue
 
 def show_rupee(index): #display of the detected currency
 	val1 = cv2.imread("display10rupee.jpg")
@@ -226,6 +369,28 @@ def show_rupee(index): #display of the detected currency
 		imvalue = val6
 	return imvalue
 
+def show_euro(index):  #display of the detected currencyV
+	val1 = cv2.imread("display1000yen.jpg")
+	val2 = cv2.imread("display2000yen.jpg")
+	val3= cv2.imread("display5000yen.jpg")
+	val4 = cv2.imread("display10000yen.jpg")
+	val5 = cv2.imread("display10000yen.jpg")
+	val6 = cv2.imread("display10000yen.jpg")
+	if index == 0:
+		imvalue = val1
+	elif index ==1:
+		imvalue = val2
+	elif index == 2:
+		imvalue = val3
+	elif index ==3:
+		imvalue = val4
+	elif index ==4:
+		imvalue = val5
+	elif index ==5:
+		imvalue = val6
+
+	return imvalue
+
 if __name__ == "__main__":
 	# Create the parser
 	my_parser = argparse.ArgumentParser(description=' ')
@@ -239,15 +404,12 @@ if __name__ == "__main__":
 	input_path = args.input
 	image = cv2.imread(input_path) #read image
 	image = cv2.resize(image,(600,int(600*0.45))) #resize
-	#print(image)
 	detectcountry = cv2.Canny(image,0,180) 
-	#print(detectcountry)
 
 
 	check,data_image= checkforcountry(detectcountry) #check the country
 
-
-	if check == 0:
+	if check == 'INR':
 		indexx, extracted_image,canniedd = rupeevaluedetection(image)
 		detected_value = show_rupee(indexx)
 		data_image = cv2.resize(data_image,(250,270))
@@ -257,16 +419,13 @@ if __name__ == "__main__":
 		one = np.concatenate((image,detected_value),axis = 1)
 		two = np.concatenate((data_image,canniedd,extracted_image),axis = 1)	
 
-		#cv2.imshow("Table 1",two)  #diplay output
 		cv2.imwrite("two.jpg", two)
-
-		#cv2.imshow("Table 2",one)
 		cv2.imwrite("one.jpg", one)
 
 		cv2.waitKey(0)
 
 
-	else:
+	elif check == 'YEN':
 		indexx, extracted_image,canniedd = yenvaluedetection(image)
 		detected_value = show_yen(indexx)
 		data_image = cv2.resize(data_image,(250,270))
@@ -276,9 +435,38 @@ if __name__ == "__main__":
 		one = np.concatenate((image,detected_value),axis = 1) #display output
 		two = np.concatenate((data_image,canniedd,extracted_image),axis = 1)
 
-		#cv2.imshow("Table 1",two)
 		cv2.imwrite("two.jpg", two)
 		cv2.imwrite("one.jpg", one)
-		#cv2.imshow("Table 2",one)
+
+		cv2.waitKey(0)
+
+	elif check == 'DOLLAR':
+		indexx, extracted_image,canniedd = dollarvaluedetection(image)
+		detected_value = show_dollar(indexx)
+		data_image = cv2.resize(data_image,(250,270))
+		extracted_image =  cv2.resize(extracted_image,(250,270))
+		detected_value = cv2.resize(detected_value,(500,270))
+
+		one = np.concatenate((image,detected_value),axis = 1) #display output
+		two = np.concatenate((data_image,canniedd,extracted_image),axis = 1)
+
+		cv2.imwrite("two.jpg", two)
+		cv2.imwrite("one.jpg", one)
+
+		cv2.waitKey(0)
+
+
+	elif check == 'EURO':
+		indexx, extracted_image,canniedd = eurovaluedetection(image)
+		detected_value = show_euro(indexx)
+		data_image = cv2.resize(data_image,(250,270))
+		extracted_image =  cv2.resize(extracted_image,(250,270))
+		detected_value = cv2.resize(detected_value,(500,270))
+
+		one = np.concatenate((image,detected_value),axis = 1) #display output
+		two = np.concatenate((data_image,canniedd,extracted_image),axis = 1)
+
+		cv2.imwrite("two.jpg", two)
+		cv2.imwrite("one.jpg", one)
 
 		cv2.waitKey(0)
