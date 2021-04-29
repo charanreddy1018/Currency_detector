@@ -88,8 +88,7 @@ def Canny(image, low, high): #overall canny edge detection function
     image = double_threshold_hysteresis(image, low, high)
     return image
 
-def checkforcountry(image): #check the currency's country 
-    pdb.set_trace()
+def checkforcountry(image): #check the currency's country
     x1 = int(len(image)*0.285) #croping the image 
     x2 = int(len(image)*0.5714)
     y1 = int(len(image[0])*0.75)
@@ -105,7 +104,6 @@ def checkforcountry(image): #check the currency's country
 	    for i in range(len(temp2)):  #check conditions
 	        if temp2[i] > 100 :
 	            c0 +=1
-		#pdb.set_trace()
 	    temp3 = np.array(temp2)
 	    display.append(temp3)
     display = np.array(display)
@@ -157,7 +155,6 @@ def rupeevaluedetection(image):
 
 	cannied = cv2.Canny(image,0,180)
 	x = cannied
-	pdb.set_trace()
 	x1 = int(len(x)*0.6164)#cropping the required information
 
 	x2 = int(len(x)*0.822)
@@ -242,7 +239,6 @@ if __name__ == "__main__":
 	input_path = args.input
 	image = cv2.imread(input_path) #read image
 	image = cv2.resize(image,(600,int(600*0.45))) #resize
-	#pdb.set_trace()
 	#print(image)
 	detectcountry = cv2.Canny(image,0,180) 
 	#print(detectcountry)
