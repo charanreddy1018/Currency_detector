@@ -276,7 +276,6 @@ def rupeevaluedetection(image):
 	final_outt = cv2.resize(out, (0, 0), fx=2.75, fy=2.75)
 
 	check = closest(dataset_for_rupee, c0/c1)  # comparing weak and dark pixels
-	print(c0/c1)
 	tempy = dataset_for_rupee.index(check)
 
 	return tempy, final_outt, cannied
