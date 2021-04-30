@@ -161,7 +161,7 @@ def checkforcountry(image):  # check the currency's country
             display2.append(temp3)
         display2 = np.array(display2)
         final_out = cv2.resize(display2, (0, 0), fx=2.75, fy=2.75)
-    if (c2 < 90 or c2 == 580):
+    if (c2 < 90 or c2 == 593):
         currency = 'EURO'
         return currency, final_out
     else:
@@ -170,7 +170,7 @@ def checkforcountry(image):  # check the currency's country
 
 
 def yenvaluedetection(image):  # yen value detection out of 1000,2000,5000,10000
-	dataset_for_yen = [6.828, 7.027, 6.8936, 5.4565]  # dataset
+	dataset_for_yen = [6.828, 6.946, 6.880, 5.236]  # dataset
 
 	cannied = Canny(image, 20, 80)  # canny
 	x = cannied
@@ -276,6 +276,7 @@ def rupeevaluedetection(image):
 	final_outt = cv2.resize(out, (0, 0), fx=2.75, fy=2.75)
 
 	check = closest(dataset_for_rupee, c0/c1)  # comparing weak and dark pixels
+	print(c0/c1)
 	tempy = dataset_for_rupee.index(check)
 
 	return tempy, final_outt, cannied
